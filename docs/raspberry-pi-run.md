@@ -28,6 +28,15 @@ sudo systemctl enable freqtrade.service
 sudo systemctl start freqtrade.service
 ```
 
+To run Bybit instead of the default config, add these lines to the service file before reloading systemd:
+
+```ini
+Environment=FT_CONFIG=/freqtrade/user_data/config.bybit.json
+Environment=FT_STRATEGY=SampleStrategy
+```
+
+Then place your filled-in Bybit config at `user_data/config.bybit.json`.
+
 ## Behavior
 
 When the service starts it will:
