@@ -1,0 +1,19 @@
+[Unit]
+Description=Freqtrade Docker Bot With Git Pull On Start
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=pi
+Group=docker
+WorkingDirectory=/home/pi/trade-bot
+Environment=FT_BRANCH=stable
+ExecStart=/home/pi/trade-bot/scripts/run-on-raspberry-pi.sh
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=10min
+
+[Install]
+WantedBy=multi-user.target
