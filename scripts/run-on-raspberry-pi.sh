@@ -18,8 +18,11 @@ if ! docker compose version >/dev/null 2>&1; then
     exit 1
 fi
 
-if [[ ! -f user_data/config.json ]]; then
-    echo "Missing user_data/config.json. Create and configure it before starting the bot." >&2
+CONFIG_PATH="${FT_CONFIG:-/freqtrade/user_data/config.json}"
+HOST_CONFIG_PATH="${CONFIG_PATH#/freqtrade/}"
+
+if [[ ! -f "$HOST_CONFIG_PATH" ]]; then
+    echo "Missing $HOST_CONFIG_PATH. Create and configure it before starting the bot." >&2
     exit 1
 fi
 
