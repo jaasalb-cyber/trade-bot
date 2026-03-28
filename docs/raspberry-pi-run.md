@@ -28,14 +28,14 @@ sudo systemctl enable freqtrade.service
 sudo systemctl start freqtrade.service
 ```
 
-To run Bybit instead of the default config, add these lines to the service file before reloading systemd:
+To run Binance instead of the default config, add these lines to the service file before reloading systemd:
 
 ```ini
-Environment=FT_CONFIG=/freqtrade/user_data/config.bybit.json
+Environment=FT_CONFIG=/freqtrade/user_data/config.binance.json
 Environment=FT_STRATEGY=SampleStrategy
 ```
 
-Then place your filled-in Bybit config at `user_data/config.bybit.json`.
+Then place your filled-in Binance config at `user_data/config.binance.json`.
 
 ## Behavior
 

@@ -11,8 +11,8 @@ User=pi
 Group=docker
 WorkingDirectory=/home/pi/trade-bot
 Environment=FT_BRANCH=stable
-# Uncomment and adjust these to use a Bybit config on the Pi.
-# Environment=FT_CONFIG=/freqtrade/user_data/config.bybit.json
+# Uncomment and adjust these to use a Binance config on the Pi.
+# Environment=FT_CONFIG=/freqtrade/user_data/config.binance.json
 # Environment=FT_STRATEGY=SampleStrategy
 ExecStart=/home/pi/trade-bot/scripts/run-on-raspberry-pi.sh
 ExecStop=/usr/bin/docker compose down
