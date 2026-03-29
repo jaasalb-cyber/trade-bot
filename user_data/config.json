@@ -67,10 +67,10 @@
         "listen_ip_address": "0.0.0.0",
         "listen_port": 8080,
         "verbosity": "error",
-        "jwt_secret_key": "change-this-jwt-secret",
+        "jwt_secret_key": "${FREQTRADE_JWT_SECRET}",
         "CORS_origins": [],
-        "username": "freqtrader",
-        "password": "change-this-password"
+        "username": "${FREQTRADE_API_USERNAME}",
+        "password": "${FREQTRADE_API_PASSWORD}"
     },
     "bot_name": "freqtrade-binance-active",
     "initial_state": "running",
