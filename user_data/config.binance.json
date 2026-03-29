@@ -10,9 +10,9 @@
     "strategy": "RaspiProStrategy",
     "strategy_path": "/freqtrade/user_data/strategies",
     "exchange": {
-        "name": "bybit",
-        "key": "API_KEY",
-        "secret": "API_SECRET",
+        "name": "binance",
+        "key": "your_binance_api_key",
+        "secret": "your_binance_secret_key",
         "ccxt_config": {
             "enableRateLimit": true
         },
@@ -54,5 +54,6 @@
     "use_exit_signal": true,
     "internals": {
         "process_throttle_secs": 5
-    }
+    },
+    "bot_name": "freqtrade-binance-futures"
 }
