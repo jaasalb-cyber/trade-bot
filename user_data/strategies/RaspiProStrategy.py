@@ -60,6 +60,15 @@ class RaspiProStrategy(IStrategy):
         dataframe["atr_ratio"] = dataframe["atr"] / dataframe["close"]
         dataframe["pct_change_1"] = dataframe["close"].pct_change()
         dataframe["pct_change_3"] = dataframe["close"].pct_change(3)
+        dataframe["pct_change_6"] = dataframe["close"].pct_change(6)
+        dataframe["rolling_low_3"] = dataframe["low"].rolling(3).min()
+        dataframe["rolling_high_24"] = dataframe["high"].rolling(24).max()
+        dataframe["drawdown_24"] = (
+            dataframe["close"] / dataframe["rolling_high_24"]
+        ) - 1.0
+        dataframe["rebound_from_low"] = (
+            dataframe["close"] / dataframe["rolling_low_3"]
+        ) - 1.0
 
         # Pause new entries for 5 candles after any large expansion candle.
         dataframe["recent_spike"] = (
@@ -68,23 +77,41 @@ class RaspiProStrategy(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        calm_trend_entry = (
+            (dataframe["volume"] > 0)
+            & (dataframe["close"] > dataframe["ema200"])
+            & (dataframe["close"] > dataframe["ema50"])
+            & (dataframe["close"] < dataframe["ema50"] * 1.01)
+            & (dataframe["candle_range"] < 0.015)
+            & (dataframe["pct_change_1"] < 0.01)
+            & (dataframe["pct_change_3"] < 0.02)
+            & (dataframe["volume"] < dataframe["vol_mean"] * 2.0)
+            & (dataframe["atr_ratio"] < 0.015)
+            & (dataframe["recent_spike"] == 0)
+            & (dataframe["rsi"] > 45)
+            & (dataframe["rsi"] < 62)
+        )
+
         dataframe.loc[
-            (
-                (dataframe["volume"] > 0)
-                & (dataframe["close"] > dataframe["ema200"])
-                & (dataframe["close"] > dataframe["ema50"])
-                & (dataframe["close"] < dataframe["ema50"] * 1.01)
-                & (dataframe["candle_range"] < 0.015)
-                & (dataframe["pct_change_1"] < 0.01)
-                & (dataframe["pct_change_3"] < 0.02)
-                & (dataframe["volume"] < dataframe["vol_mean"] * 2.0)
-                & (dataframe["atr_ratio"] < 0.015)
-                & (dataframe["recent_spike"] == 0)
-                & (dataframe["rsi"] > 45)
-                & (dataframe["rsi"] < 62)
-            ),
+            calm_trend_entry,
             ["enter_long", "enter_tag"],
         ] = (1, "calm_trend_entry")
+
+        dip_rebound_entry = (
+            (dataframe["volume"] > 0)
+            & (dataframe["drawdown_24"] < -0.04)
+            & (dataframe["pct_change_6"] < -0.03)
+            & (dataframe["rebound_from_low"] > 0.008)
+            & (dataframe["pct_change_1"] > 0.002)
+            & (dataframe["close"] > dataframe["close"].shift(1))
+            & (dataframe["rsi"] > 32)
+            & (dataframe["rsi"] < 52)
+        )
+
+        dataframe.loc[
+            dip_rebound_entry,
+            ["enter_long", "enter_tag"],
+        ] = (1, "dip_rebound_entry")
 
         return dataframe
 
