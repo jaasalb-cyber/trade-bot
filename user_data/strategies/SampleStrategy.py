@@ -1,6 +1,7 @@
 from pandas import DataFrame
 
 from freqtrade.templates.sample_strategy import SampleStrategy as BaseSampleStrategy
+from freqtrade.strategy.strategy_helper import merge_informative_pair
 
 
 class SampleStrategy(BaseSampleStrategy):
@@ -17,8 +18,44 @@ class SampleStrategy(BaseSampleStrategy):
     can_short = False
     startup_candle_count = 240
 
+    def informative_pairs(self):
+        return [("BTC/USDT", self.timeframe)]
+
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe = super().populate_indicators(dataframe, metadata)
+
+        if self.dp:
+            btc_df = self.dp.get_pair_dataframe("BTC/USDT", self.timeframe)
+            if not btc_df.empty:
+                btc_df = btc_df.copy()
+                btc_df["btc_ema50"] = btc_df["close"].ewm(span=50, adjust=False).mean()
+                btc_df["btc_ema200"] = btc_df["close"].ewm(span=200, adjust=False).mean()
+                btc_df["btc_return_12"] = btc_df["close"].pct_change(12)
+                btc_df["btc_drawdown_24"] = (
+                    btc_df["close"] / btc_df["high"].rolling(24).max()
+                ) - 1.0
+                btc_df["btc_trend_ok"] = (
+                    (btc_df["btc_ema50"] > btc_df["btc_ema200"])
+                    & (btc_df["btc_return_12"] > -0.03)
+                    & (btc_df["btc_drawdown_24"] > -0.06)
+                ).astype(int)
+                dataframe = merge_informative_pair(
+                    dataframe,
+                    btc_df[
+                        [
+                            "date",
+                            "btc_ema50",
+                            "btc_ema200",
+                            "btc_return_12",
+                            "btc_drawdown_24",
+                            "btc_trend_ok",
+                        ]
+                    ],
+                    self.timeframe,
+                    self.timeframe,
+                    append_timeframe=False,
+                    suffix="btc",
+                )
 
         dataframe["ema50"] = dataframe["close"].ewm(span=50, adjust=False).mean()
         dataframe["ema200"] = dataframe["close"].ewm(span=200, adjust=False).mean()
@@ -83,6 +120,13 @@ class SampleStrategy(BaseSampleStrategy):
             )
             & (dataframe["panic_regime"] == 0)
         ).astype(int)
+        if "btc_trend_ok_btc" in dataframe.columns:
+            dataframe["market_regime_ok"] = (
+                (dataframe["btc_trend_ok_btc"] == 1)
+                | (metadata["pair"] == "BTC/USDT")
+            ).astype(int)
+        else:
+            dataframe["market_regime_ok"] = 1
 
         return dataframe
 
@@ -94,6 +138,7 @@ class SampleStrategy(BaseSampleStrategy):
             (dataframe["volume"] > 0)
             & (dataframe["trend_regime"] == 1)
             & (dataframe["chop_regime"] == 0)
+            & (dataframe["market_regime_ok"] == 1)
             & (dataframe["close"] > dataframe["bb_middleband"])
             & (dataframe["close"] > dataframe["rolling_high_12"].shift(1) * 0.998)
             & (dataframe["tema"] > dataframe["tema"].shift(1))
@@ -114,6 +159,7 @@ class SampleStrategy(BaseSampleStrategy):
             (dataframe["volume"] > 0)
             & (dataframe["trend_regime"] == 1)
             & (dataframe["chop_regime"] == 0)
+            & (dataframe["market_regime_ok"] == 1)
             & (dataframe["close"] > dataframe["ema200"])
             & (dataframe["close"] > dataframe["ema50"] * 0.995)
             & (dataframe["close"] < dataframe["ema50"] * 1.01)
@@ -134,6 +180,7 @@ class SampleStrategy(BaseSampleStrategy):
         panic_rebound_entry = (
             (dataframe["volume"] > 0)
             & (dataframe["panic_regime"] == 1)
+            & (dataframe["market_regime_ok"] == 1)
             & (dataframe["rebound_from_low"] > 0.01)
             & (dataframe["rebound_from_swing_low"] > 0.012)
             & (dataframe["pct_change_6"] < -0.035)
