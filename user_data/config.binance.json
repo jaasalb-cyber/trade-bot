@@ -1,69 +1,57 @@
 {
     "$schema": "https://schema.freqtrade.io/schema.json",
-    "max_open_trades": 3,
+    "max_open_trades": 4,
     "stake_currency": "USDT",
-    "stake_amount": 50,
-    "tradable_balance_ratio": 0.99,
-    "fiat_display_currency": "USD",
-    "timeframe": "5m",
+    "stake_amount": 40,
     "dry_run": true,
-    "cancel_open_orders_on_exit": false,
-    "unfilledtimeout": {
-        "entry": 10,
-        "exit": 10,
-        "exit_timeout_count": 0,
-        "unit": "minutes"
-    },
-    "entry_pricing": {
-        "price_side": "same",
-        "use_order_book": true,
-        "order_book_top": 1,
-        "price_last_balance": 0.0,
-        "check_depth_of_market": {
-            "enabled": false,
-            "bids_to_ask_delta": 1
-        }
-    },
-    "exit_pricing": {
-        "price_side": "same",
-        "use_order_book": true,
-        "order_book_top": 1
-    },
+    "trading_mode": "futures",
+    "margin_mode": "isolated",
+    "timeframe": "1h",
+    "strategy": "RaspiProStrategy",
+    "strategy_path": "/freqtrade/user_data/strategies",
     "exchange": {
-        "name": "binance",
-        "key": "your_binance_api_key",
-        "secret": "your_binance_secret_key",
+        "name": "bybit",
+        "key": "API_KEY",
+        "secret": "API_SECRET",
         "ccxt_config": {
             "enableRateLimit": true
         },
         "ccxt_async_config": {},
         "pair_whitelist": [
-            "BTC/USDT",
-            "ETH/USDT"
+            "BTC/USDT:USDT",
+            "ETH/USDT:USDT",
+            "SOL/USDT:USDT",
+            "LINK/USDT:USDT"
         ],
         "pair_blacklist": []
     },
     "pairlists": [
-        {"method": "StaticPairList"}
+        {
+            "method": "StaticPairList"
+        }
     ],
-    "telegram": {
-        "enabled": false,
-        "token": "your_telegram_token",
-        "chat_id": "your_telegram_chat_id"
+    "order_types": {
+        "entry": "market",
+        "exit": "market",
+        "stoploss": "market"
     },
-    "api_server": {
-        "enabled": false,
-        "listen_ip_address": "127.0.0.1",
-        "listen_port": 8080,
-        "verbosity": "error",
-        "jwt_secret_key": "somethingRandomSomethingRandom123",
-        "CORS_origins": [],
-        "username": "freqtrader",
-        "password": "SuperSecurePassword"
+    "stoploss": -0.025,
+    "trailing_stop": true,
+    "trailing_stop_positive": 0.012,
+    "trailing_stop_positive_offset": 0.02,
+    "trailing_only_offset_is_reached": true,
+    "minimal_roi": {
+        "120": 0.0,
+        "60": 0.015,
+        "30": 0.03,
+        "0": 0.05
     },
-    "bot_name": "freqtrade-binance",
-    "initial_state": "running",
-    "force_entry_enable": false,
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 10,
+        "unit": "minutes"
+    },
+    "use_exit_signal": true,
     "internals": {
         "process_throttle_secs": 5
     }
