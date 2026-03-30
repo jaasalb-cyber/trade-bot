@@ -59,8 +59,8 @@
     ],
     "telegram": {
         "enabled": false,
-        "token": "your_telegram_token",
-        "chat_id": "your_telegram_chat_id"
+        "token": "${FREQTRADE_TELEGRAM_TOKEN}",
+        "chat_id": "${FREQTRADE_TELEGRAM_CHAT_ID}"
     },
     "api_server": {
         "enabled": true,
